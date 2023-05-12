@@ -198,7 +198,7 @@ app.post('/dalle', async function(req,res) {
 })
 
 // Start server
-const PORT = process.env.PORT || 3001;
+// const PORT = process.env.PORT || 3001;
 // app.listen(port, ()  console.log(`Server listening on port ${port}`));
 // app.listen(PORT, function(err) {
 //   if (err) {
@@ -207,5 +207,22 @@ const PORT = process.env.PORT || 3001;
 //     console.log(`Running on port ${PORT}`)
 //   }
 // })
+const appZ = require('express')();
+const { v4 } = require('uuid');
 
-module.exports = app;
+appZ.get('/api', (req, res) => {
+  const path = `/api/item/${v4()}`;
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
+  res.end(`Hello! Go to item: <a href="${path}">${path}</a>`);
+});
+
+appZ.get('/api/item/:slug', (req, res) => {
+  const { slug } = req.params;
+  res.end(`Item: ${slug}`);
+});
+
+// appZ.listen( 8888, function (err){})
+
+module.exports = appZ;
+
