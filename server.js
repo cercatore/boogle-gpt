@@ -86,10 +86,12 @@ app.post('/davinci', async function(req, res) {
     })
 
     console.log(response.data.choices[0].message.content)
+  console.log(response.data.choices[0].context)
     console.log(user)
     // Return response from OpenAI API
     res.status(200).send({
       bot: response.data.choices[0].message.content,
+      context: response.data.choices[0].context,
       limit: 0
     })
   } catch (error) {
@@ -207,22 +209,9 @@ app.post('/dalle', async function(req,res) {
 //     console.log(`Running on port ${PORT}`)
 //   }
 // })
-const appZ = require('express')();
-const { v4 } = require('uuid');
-
-appZ.get('/api', (req, res) => {
-  const path = `/api/item/${v4()}`;
-  res.setHeader('Content-Type', 'text/html');
-  res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-  res.end(`Hello! Go to item: <a href="${path}">${path}</a>`);
-});
-
-appZ.get('/api/item/:slug', (req, res) => {
-  const { slug } = req.params;
-  res.end(`Item: ${slug}`);
-});
 
 // appZ.listen( 8888, function (err){})
+ app.listen( 8080, function (err){})
 
-module.exports = appZ;
+module.exports = app;
 
