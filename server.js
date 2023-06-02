@@ -11,8 +11,10 @@ const filter = new Filter();
 // Load environment variables from .env file
 try {
   require('dotenv').config();
+  console.log(process.env.OPENAI_API_KEY)
   
 } catch (error) {
+  console.log(process.env.OPENAI_API_KEY)
   console.error('Error loading environment variables:', error);
   process.exit(1);
 }
@@ -35,11 +37,17 @@ const app = express();
 app.use(express.json());
 
 // Enable CORS
-app.use(cors());
 
 // ratelimiter middleware function
 //app.use('/davinci', rateLimitMiddleware);
 //app.use('/dalle', rateLimitMiddleware);
+
+app.use((req, res, next) => {
+  res.append('Access-Control-Allow-Origin', ['*']);
+  res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE, OPTIONS');
+  res.append('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
 
 /**
  * GET /
@@ -66,21 +74,30 @@ app.post('/davinci', async function(req, res) {
   try {
     // Call OpenAI API
     const { prompt, user } = req.body
+    const { history } = req.body
+    console.log(history)
     const cleanPrompt = filter.isProfane(prompt) ? filter.clean(prompt) : prompt
     console.log(cleanPrompt)
-
+    let out = [];
+    out.push({"role": "system", "content": "you're an a AI assistant that replies to all my questions in markdown format."})
+    let item = history.pop();
+    console.log(history.length)
+    for (let ii = 0; ii < history.length;ii++){
+      item = history.pop();
+    
+      console.log(item)
+      out.push({"role":"user", "content":item})
+    }
+    
+    let promptItem = {"role": "user", "content": `${cleanPrompt}?`};
+    out.push(promptItem)
     const response = await openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
-      messages: [
-        {"role": "system", "content": "you're an a AI assistant that replies to all my questions in markdown format."},
-        {"role": "user", "content": "hi"},
-        {"role": "assistant", "content": "Hi! How can I help you?"},
-        {"role": "user", "content": `${cleanPrompt}?`}
-    ],
-      user: user,
+      messages: out,
+      user: "user",  // ? ?? ?
       temperature: 0.5,
-      max_tokens: 500,
-      top_p: 0.5,
+      max_tokens: 2047,
+      top_p: 0.3,
       frequency_penalty: 0.5,
       presence_penalty: 0.2,
     })
@@ -209,9 +226,23 @@ app.post('/dalle', async function(req,res) {
 //     console.log(`Running on port ${PORT}`)
 //   }
 // })
+// app.options ("*", (req, res) => {
+//   res.header(
+//     {
+//       'Access-Control-Allow-Origin':'*',
+//       'Access-Control-Allow-Methods':'GET,POST, OPTIONS',
+//       'Access-Control-Allow-Headers': 'Content-Type'
+//     })
+  // res.header( 'Access-Control-Allow-Credentials', true)
+  // # try: 'POST, GET, PUT, DELETE, OPTIONS'
 
+  // # try: 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept'
+
+ 
+
+  // # ...
 // appZ.listen( 8888, function (err){})
- app.listen( 8080, function (err){})
+ app.listen( 3000, function (err){})
 
 module.exports = app;
 
