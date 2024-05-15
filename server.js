@@ -58,6 +58,19 @@ app.get('/', function(req, res) {
     message: 'Hello World!',
   });
 });
+/* utils
+*
+*   function checkIncludes( text)
+*
+ */
+const models = [ "gpt-4o", "gpt-4-turbo", "gpt-4-turbo-preview", "gpt-4-vision-preview", "gpt-3.5-turbo"];
+
+function checkIncludes(text) {
+    for ( let cc = 0; cc <= 5; cc++){
+        if ( text === models[cc]) return true;
+    }
+    return false
+}
 
 /**
  * POST /davinci
@@ -70,12 +83,19 @@ app.post('/davinci', async function(req, res) {
       error: 'Missing required field "prompt" in request body',
     })
   }
-
+  
   try {
     // Call OpenAI API
-    const { prompt, user } = req.body
+    const { prompt, user, model } = req.body
     const { history } = req.body
-    console.log(history)
+    console.log("checking model" + model );
+    let retvalue = checkIncludes( model);
+
+    if (! retValue){
+      res.status(404).send({success:false,message:`error: the model ${model} is not available.`})
+      return;
+    }
+
     const cleanPrompt = filter.isProfane(prompt) ? filter.clean(prompt) : prompt
     console.log(cleanPrompt)
     let out = [];
@@ -242,7 +262,7 @@ app.post('/dalle', async function(req,res) {
 
   // # ...
 // appZ.listen( 8888, function (err){})
- app.listen( 3000, function (err){})
+//  app.listen( 3000, function (err){})
 
 module.exports = app;
 
